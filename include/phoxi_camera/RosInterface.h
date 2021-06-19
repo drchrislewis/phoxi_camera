@@ -58,7 +58,21 @@ namespace phoxi_camera {
     class RosInterface : protected PhoXiInterface {
     public:
         RosInterface();
-
+  
+      void gpFrame()
+      {
+	phoxi_camera::IsConnected::Request req;
+	phoxi_camera::IsConnected::Response res;
+	isConnected(req, res);
+	if(res.connected)
+	  {
+	    phoxi_camera::GetFrame::Request req;
+	    phoxi_camera::GetFrame::Response res;
+	    req.in = -1;
+	    getFrame(req,res);
+	  }
+      }
+      
     protected:
         void publishFrame(pho::api::PFrame frame);
 

@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
     eigen_conversions
     cv_bridge
     message_generation
+    camera_info_manager
 )
 
 catkin_python_setup()
@@ -88,6 +89,7 @@ catkin_package(
     geometry_msgs
     cv_bridge
     eigen_conversions
+    camera_info_manager
   DEPENDS
     PhoXi
 )
