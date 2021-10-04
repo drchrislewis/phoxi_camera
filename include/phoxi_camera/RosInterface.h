@@ -27,6 +27,8 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/fill_image.h>
+#include <camera_info_manager/camera_info_manager.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <std_srvs/Empty.h>
 #include <phoxi_camera/PhoXiInterface.h>
 #include <phoxi_camera/GetDeviceList.h>
@@ -72,7 +74,8 @@ namespace phoxi_camera {
 	    getFrame(req,res);
 	  }
       }
-      
+      sensor_msgs::CameraInfo ci_;      
+
     protected:
         void publishFrame(pho::api::PFrame frame);
 
@@ -178,6 +181,7 @@ namespace phoxi_camera {
         ros::Publisher normalMapPub;
         ros::Publisher confidenceMapPub;
         ros::Publisher rawTexturePub;
+        ros::Publisher rectTexturePub;
         ros::Publisher rgbTexturePub;
         ros::Publisher depthMapPub;
 

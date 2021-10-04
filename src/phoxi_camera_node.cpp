@@ -67,11 +67,11 @@ int main(int argc, char** argv) {
 	ci.D.push_back(0.000254629); // t1
 	ci.D.push_back(8.17743e-05); // t2
 	ci.D.push_back(-0.0268664); // t3
-	ci.K[0] = 2246.59*0.96; // fx
+	ci.K[0] = 2246.59; // fx
 	ci.K[1] = 0;
 	ci.K[2] = 1039.16; // cx
 	ci.K[3] = 0;
-	ci.K[4] = 2245.66*0.96; // fy
+	ci.K[4] = 2245.66; // fy
 	ci.K[5] = 800.869; // cy
 	ci.K[6] = 0;
 	ci.K[7] = 0;
@@ -90,10 +90,10 @@ int main(int argc, char** argv) {
     while(ros::ok())
       {
 	interface.gpFrame();
-	sensor_msgs::CameraInfo ci = cinfo.getCameraInfo();
-	ci.header.stamp = ros::Time::now();
-	ci.header.seq = seq++;
-	cinfo_pub.publish(ci);
+	interface.ci_ = cinfo.getCameraInfo();
+	interface.ci_.header.stamp = ros::Time::now();
+	interface.ci_.header.seq = seq++;
+	cinfo_pub.publish(interface.ci_);
 	ros::spinOnce();
       }
     return 0;

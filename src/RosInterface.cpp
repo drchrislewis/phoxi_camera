@@ -3,6 +3,8 @@
 //
 
 #include "phoxi_camera/RosInterface.h"
+#include <opencv2/imgproc.hpp>
+#include "opencv2/calib3d/calib3d.hpp"
 
 namespace phoxi_camera {
     RosInterface::RosInterface() : nh("~"), dynamicReconfigureServer(dynamicReconfigureMutex, nh),
@@ -44,6 +46,7 @@ namespace phoxi_camera {
         normalMapPub = nh.advertise<sensor_msgs::Image>("normal_map", topic_queue_size, latch_topics);
         confidenceMapPub = nh.advertise<sensor_msgs::Image>("confidence_map", topic_queue_size, latch_topics);
         rawTexturePub = nh.advertise<sensor_msgs::Image>("texture", topic_queue_size, latch_topics);
+	rectTexturePub = nh.advertise<sensor_msgs::Image>("image_rect", topic_queue_size, latch_topics);
         rgbTexturePub = nh.advertise<sensor_msgs::Image>("rgb_texture", topic_queue_size, latch_topics);
         depthMapPub = nh.advertise<sensor_msgs::Image>("depth_map", topic_queue_size, latch_topics);
 
@@ -351,6 +354,31 @@ namespace phoxi_camera {
                                    frame->Texture.Size.Width * sizeof(float), // stepSize
                                    frame->Texture.operator[](0));
             rawTexturePub.publish(texture);
+
+	    cv_bridge::CvImagePtr cv_texture;
+	    cv::Mat cv_rect(frame->Texture.Size.Height, frame->Texture.Size.Width, CV_32F);
+	    cv_texture = cv_bridge::toCvCopy(texture, sensor_msgs::image_encodings::TYPE_32FC1);
+	    cv::Mat CM(3,3,CV_32F);
+	    CM.at<float>(0,0) = ci_.K[0];
+	    CM.at<float>(0,1) = ci_.K[1];	    
+	    CM.at<float>(0,2) = ci_.K[2];	    
+	    CM.at<float>(1,0) = ci_.K[3];
+	    CM.at<float>(1,1) = ci_.K[4];	    
+	    CM.at<float>(1,2) = ci_.K[5];	    
+	    CM.at<float>(2,0) = ci_.K[6];
+	    CM.at<float>(2,1) = ci_.K[7];	    
+	    CM.at<float>(2,2) = ci_.K[8];	    
+	    cv::undistort(cv_texture->image, cv_rect, CM, ci_.D);
+            sensor_msgs::Image image_rect;
+            image_rect.header = header;
+            image_rect.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+            sensor_msgs::fillImage(image_rect, sensor_msgs::image_encodings::TYPE_32FC1,
+                                   frame->Texture.Size.Height, // height
+                                   frame->Texture.Size.Width, // width
+                                   frame->Texture.Size.Width * sizeof(float), // stepSize
+                                   cv_rect.data);
+            rectTexturePub.publish(image_rect);
+
             cv::Mat cvGreyTexture(frame->Texture.Size.Height, frame->Texture.Size.Width, CV_32FC1,
                                   frame->Texture.operator[](0));
             cv::normalize(cvGreyTexture, cvGreyTexture, 0, 255, CV_MINMAX);
